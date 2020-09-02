@@ -1,13 +1,9 @@
-const { Engine,
-     Render,
-     Runner, 
-     World, 
-     Bodies, 
-    } = Matter;
-
-    const cells = 3;
-    const width = 600;
-    const height = 600;
+const { Engine,Render,Runner,World,Bodies } = Matter;
+   
+const cells = 3;
+const width = 600;
+const height = 600;
+const unitLength= width /cells;
 
 const engine = Engine.create();
 const { world } = engine;
@@ -84,7 +80,7 @@ const stepThroughCell = (row, column) => {
   [row,column-1,'left']
 
  ]);
- //for each neighbor...
+ //for each neighbor  ...
  for (let neighbor of neighbors){
      const [nextRow,nextcolumn,direction] = neighbor;
 
@@ -99,11 +95,28 @@ const stepThroughCell = (row, column) => {
  }
 
   //remove a wall from either horizentals and verticals 
+   if(direction === 'left'){
+       verticals[row][column-1]= true;
+   }else if(direction === 'right'){
+       verticals[row][column] = true;
+   }else if (direction === 'up'){
+       horizontals[row-1][column]= true;
+   }else if (direction === 'down'){
+       horizontals[row][column] = true;
+   }
+  stepThroughCell(nextRow, nextcolumn);
  }
-
 
   };
 
-  stepThroughCell(1, 1);
-  
+  stepThroughCell(startRow, startColumn);
 
+  horizontals.forEach(row=> {
+      row.forEach ((open)=> {
+          if(open){
+              return;
+          }
+
+          const wall =Bodies.rectangle();
+      });
+  });
