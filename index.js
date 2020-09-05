@@ -1,11 +1,12 @@
-const { Engine,Render,Runner,World,Bodies, Body } = Matter;
+const { Engine,Render,Runner,World,Bodies, Body, Events } = Matter;
    
-const cells = 15;
+const cells = 3 ;
 const width = 600;
 const height = 600;
 const unitLength= width /cells;
 
 const engine = Engine.create();
+engine.world.gravity.y =0; 
 const { world } = engine;
 const render = Render.create({
     //tells matter js where we want to show our drawing inside the dom.
@@ -123,6 +124,7 @@ const stepThroughCell = (row, column) => {
             unitLength,
             5,
             {
+                label: 'wall', 
                 isStatic:true
             }
           );
@@ -142,6 +144,7 @@ const stepThroughCell = (row, column) => {
             5,
             unitLength,
             {
+                label:'wall',
                 isStatic:true
             }
         );
@@ -155,6 +158,7 @@ const stepThroughCell = (row, column) => {
       unitLength * .7,
       unitLength * .7,
       {
+          label: 'goal',
           isStatic:true
       }
   );
@@ -164,7 +168,7 @@ const stepThroughCell = (row, column) => {
   const ball = Bodies.circle(
      unitLength / 2,
      unitLength / 2,
-     unitLength / 4
+     unitLength / 4, {label: 'ball'}
   );
   World.add(world, ball);
 
@@ -183,3 +187,23 @@ const stepThroughCell = (row, column) => {
         Body.setVelocity(ball, { x: x -5 , y });
     }
   });
+
+  //WIn condition
+ Events.on(engine, 'collisionStart', event=>{
+    event.pairs.forEach((collision)=> {
+        const labels = ['ball','goal'];
+
+        if (
+            labels.includes(collision.bodyA.label)&&
+            labels.includes(collision.bodyB.label)
+        ){
+            world.gravity.y =1 ;
+            world.bodies.forEach(body =>{
+            if (body.label === 'wall'){
+             Body.setStatic(body, false);
+            }
+         });
+        }
+    });  
+ });
+   
