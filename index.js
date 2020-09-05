@@ -1,9 +1,12 @@
 const { Engine,Render,Runner,World,Bodies, Body, Events } = Matter;
    
-const cells = 3 ;
-const width = 600;
-const height = 600;
-const unitLength= width /cells;
+const cellsHorizontal = 8;
+const cellsVertical = 9 ;
+const width = window.innerWidth;
+const height = window.innerHeight;
+
+const unitLengthX= width / cellsHorizontal;
+const unitLengthY = height /cellsVertical;
 
 const engine = Engine.create();
 engine.world.gravity.y =0; 
@@ -14,7 +17,7 @@ const render = Render.create({
     engine: engine,
     //width and height of the canvas element.
     options: {
-        wireframes: true, 
+        wireframes: false, 
         width,
         height 
     }
@@ -49,20 +52,20 @@ const shuffle = (arr) =>{
   return arr;
 };
 
-const grid =Array(cells)
+const grid =Array(cellsVertical)
     .fill(null)
-    .map(() => Array(cells).fill(false));
+    .map(() => Array(cellsHorizontal).fill(false));
    
-const verticals=Array(cells)
+const verticals=Array(cellsVertical)
     .fill(null)
-    .map(() => Array(cells-1).fill(false)); 
+    .map(() => Array(cellsHorizontal-1).fill(false)); 
 
-const horizontals = Array(cells-1)
+const horizontals = Array(cellsVertical-1)
     .fill(null)
-    .map(() => Array(cells).fill(false));
+    .map(() => Array(cellsHorizontal).fill(false));
 
-const startRow = Math.floor(Math.random() * cells);
-const startColumn = Math.floor(Math.random() * cells);    
+const startRow = Math.floor(Math.random() * cellsVertical);
+const startColumn = Math.floor(Math.random() * cellsHorizontal);    
 
 const stepThroughCell = (row, column) => {
  //if i have visited the cell at [row,column], then return
@@ -86,7 +89,7 @@ const stepThroughCell = (row, column) => {
      const [nextRow,nextcolumn,direction] = neighbor;
 
  //see if that neighbor is out of bounds
- if(nextRow < 0 || nextRow >=cells || nextcolumn< 0 || nextcolumn >= cells ){
+ if(nextRow < 0 || nextRow >=cellsVertical || nextcolumn< 0 || nextcolumn >= cellsHorizontal ){
      continue;
  }
  
@@ -119,13 +122,16 @@ const stepThroughCell = (row, column) => {
           }
 
           const wall =Bodies.rectangle(
-              columnIndex * unitLength + unitLength / 2,
-              rowIndex  * unitLength + unitLength,
-            unitLength,
+              columnIndex * unitLengthX + unitLengthX / 2,
+              rowIndex  * unitLengthY + unitLengthY,
+            unitLengthX,
             5,
             {
                 label: 'wall', 
-                isStatic:true
+                isStatic:true,
+                render: {
+                    fillStyle: 'red'
+                }
             }
           );
           World.add(world, wall);
@@ -139,13 +145,16 @@ const stepThroughCell = (row, column) => {
         }
 
         const wall = Bodies.rectangle(
-            columnIndex * unitLength + unitLength,
-            rowIndex * unitLength + unitLength /2 ,
+            columnIndex * unitLengthX + unitLengthX,
+            rowIndex * unitLengthY + unitLengthY /2 ,
             5,
-            unitLength,
+            unitLengthY,
             {
                 label:'wall',
-                isStatic:true
+                isStatic:true,
+                render : {
+                    fillStyle:'red'
+                }
             }
         );
         World.add (world,wall);
@@ -153,22 +162,29 @@ const stepThroughCell = (row, column) => {
   });
 //goal
   const goal = Bodies.rectangle(
-      width - unitLength / 2,
-      height - unitLength /2,
-      unitLength * .7,
-      unitLength * .7,
+      width - unitLengthX / 2,
+      height - unitLengthY/2,
+      unitLengthX * .7,
+      unitLengthY * .7,
       {
           label: 'goal',
-          isStatic:true
+          isStatic:true,
+          render: {
+              fillStyle: 'green'
+          }
       }
   );
   World.add(world, goal);
 
   //ball
+  const ballRadius = Math.min(unitLengthX, unitLengthY) / 4;
   const ball = Bodies.circle(
-     unitLength / 2,
-     unitLength / 2,
-     unitLength / 4, {label: 'ball'}
+     unitLengthX / 2,
+     unitLengthY / 2,
+     ballRadius, {label: 'ball',
+    render : {
+        fillStyle:'blue'
+    }}
   );
   World.add(world, ball);
 
@@ -197,6 +213,7 @@ const stepThroughCell = (row, column) => {
             labels.includes(collision.bodyA.label)&&
             labels.includes(collision.bodyB.label)
         ){
+            document.querySelector('.winner').classList.remove('hidden');
             world.gravity.y =1 ;
             world.bodies.forEach(body =>{
             if (body.label === 'wall'){
